@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+ui/node_modules/
+
+# Build output
+ui/dist/
+*.pyc
+__pycache__/
+
+# Environment
+.env
+.env.local
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker data volumes
+docker/databases/*/data/
+
+# Progress data
+tools/progress-tracker/data/
+
+# Temporary files
+*.tmp
+*.bak

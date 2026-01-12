@@ -1,0 +1,302 @@
+#===============================================================================
+# Cybersecurity Learning Platform - Docker Compose
+#===============================================================================
+# All vulnerable systems for hands-on hacking practice
+# ISOLATED NETWORK - For educational purposes only
+#===============================================================================
+
+version: '3.8'
+
+networks:
+  lab-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+  isolated-web:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+  isolated-db:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+services:
+  #============================================================================
+  # WEB APPLICATIONS - OWASP Top 10 Practice
+  #============================================================================
+
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: lab-dvwa
+    ports:
+      - "8081:80"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.1.10
+    environment:
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=p@ssw0rd
+      - MYSQL_DATABASE=dvwa
+    volumes:
+      - dvwa-data:/var/lib/mysql
+    restart: unless-stopped
+    labels:
+      - "lab.category=web"
+      - "lab.difficulty=beginner"
+      - "lab.name=DVWA"
+      - "lab.description=Damn Vulnerable Web Application - Perfect for beginners"
+
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: lab-juice-shop
+    ports:
+      - "8082:3000"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.1.11
+    restart: unless-stopped
+    labels:
+      - "lab.category=web"
+      - "lab.difficulty=intermediate"
+      - "lab.name=OWASP Juice Shop"
+      - "lab.description=Modern insecure web app with 100+ challenges"
+
+  webgoat:
+    image: webgoat/webgoat:latest
+    container_name: lab-webgoat
+    ports:
+      - "8083:8080"
+      - "9090:9090"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.1.12
+    environment:
+      - WEBGOAT_HOST=0.0.0.0
+      - WEBGOAT_PORT=8080
+    restart: unless-stopped
+    labels:
+      - "lab.category=web"
+      - "lab.difficulty=beginner"
+      - "lab.name=WebGoat"
+      - "lab.description=OWASP WebGoat - Guided lessons for web security"
+
+  bwapp:
+    build: ./web-apps/bwapp
+    container_name: lab-bwapp
+    ports:
+      - "8084:80"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.1.13
+    volumes:
+      - bwapp-data:/var/lib/mysql
+    restart: unless-stopped
+    labels:
+      - "lab.category=web"
+      - "lab.difficulty=beginner"
+      - "lab.name=bWAPP"
+      - "lab.description=Buggy Web Application with 100+ vulnerabilities"
+
+  mutillidae:
+    image: citizenstig/nowasp:latest
+    container_name: lab-mutillidae
+    ports:
+      - "8085:80"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.1.14
+    restart: unless-stopped
+    labels:
+      - "lab.category=web"
+      - "lab.difficulty=intermediate"
+      - "lab.name=Mutillidae II"
+      - "lab.description=OWASP Mutillidae II - Deliberately vulnerable app"
+
+  #============================================================================
+  # VULNERABLE DATABASES - SQL Injection & NoSQL Practice
+  #============================================================================
+
+  mysql-vuln:
+    build: ./databases/mysql-vulnerable
+    container_name: lab-mysql-vuln
+    ports:
+      - "3307:3306"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.2.10
+      isolated-db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=vulnerable_db
+    volumes:
+      - mysql-vuln-data:/var/lib/mysql
+    restart: unless-stopped
+    labels:
+      - "lab.category=database"
+      - "lab.difficulty=intermediate"
+      - "lab.name=Vulnerable MySQL"
+      - "lab.description=MySQL with weak configs, plaintext passwords, SQLi targets"
+
+  postgres-vuln:
+    build: ./databases/postgres-vulnerable
+    container_name: lab-postgres-vuln
+    ports:
+      - "5433:5432"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.2.11
+      isolated-db:
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=vulnerable_db
+    volumes:
+      - postgres-vuln-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    labels:
+      - "lab.category=database"
+      - "lab.difficulty=intermediate"
+      - "lab.name=Vulnerable PostgreSQL"
+      - "lab.description=PostgreSQL with weak authentication and sensitive data"
+
+  redis-vuln:
+    image: redis:6-alpine
+    container_name: lab-redis-vuln
+    ports:
+      - "6380:6379"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.2.12
+    command: redis-server --protected-mode no
+    restart: unless-stopped
+    labels:
+      - "lab.category=database"
+      - "lab.difficulty=beginner"
+      - "lab.name=Vulnerable Redis"
+      - "lab.description=Redis with no authentication - practice unauthorized access"
+
+  mongodb-vuln:
+    image: mongo:4.4
+    container_name: lab-mongodb-vuln
+    ports:
+      - "27018:27017"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.2.13
+    # No authentication - intentionally vulnerable
+    volumes:
+      - mongodb-vuln-data:/data/db
+    restart: unless-stopped
+    labels:
+      - "lab.category=database"
+      - "lab.difficulty=beginner"
+      - "lab.name=Vulnerable MongoDB"
+      - "lab.description=MongoDB with no auth - NoSQL injection practice"
+
+  #============================================================================
+  # FULL OS TARGETS - System Exploitation
+  #============================================================================
+
+  metasploitable2:
+    image: tleemcjr/metasploitable2:latest
+    container_name: lab-metasploitable2
+    networks:
+      lab-network:
+        ipv4_address: 172.20.3.10
+    tty: true
+    stdin_open: true
+    privileged: true
+    restart: unless-stopped
+    labels:
+      - "lab.category=os"
+      - "lab.difficulty=advanced"
+      - "lab.name=Metasploitable 2"
+      - "lab.description=Classic vulnerable Linux VM with multiple attack vectors"
+
+  #============================================================================
+  # CUSTOM VULNERABLE SERVICES
+  #============================================================================
+
+  vuln-ssh:
+    build: ./custom-services/vulnerable-ssh
+    container_name: lab-vuln-ssh
+    ports:
+      - "2222:22"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.4.10
+    restart: unless-stopped
+    labels:
+      - "lab.category=service"
+      - "lab.difficulty=intermediate"
+      - "lab.name=Vulnerable SSH"
+      - "lab.description=SSH with weak crypto and default credentials"
+
+  vuln-ftp:
+    build: ./custom-services/vulnerable-ftp
+    container_name: lab-vuln-ftp
+    ports:
+      - "2121:21"
+      - "30000-30009:30000-30009"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.4.11
+    restart: unless-stopped
+    labels:
+      - "lab.category=service"
+      - "lab.difficulty=beginner"
+      - "lab.name=Vulnerable FTP"
+      - "lab.description=FTP with anonymous access and directory traversal"
+
+  buffer-overflow:
+    build: ./custom-services/buffer-overflow-server
+    container_name: lab-buffer-overflow
+    ports:
+      - "9999:9999"
+    networks:
+      lab-network:
+        ipv4_address: 172.20.4.12
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    restart: unless-stopped
+    labels:
+      - "lab.category=exploitation"
+      - "lab.difficulty=advanced"
+      - "lab.name=Buffer Overflow Server"
+      - "lab.description=Custom vulnerable C server for binary exploitation"
+
+  #============================================================================
+  # UTILITY SERVICES
+  #============================================================================
+
+  # Kali attacker container (optional - for isolated attacks)
+  kali-attacker:
+    image: kalilinux/kali-rolling:latest
+    container_name: lab-kali-attacker
+    networks:
+      lab-network:
+        ipv4_address: 172.20.5.10
+    tty: true
+    stdin_open: true
+    command: /bin/bash
+    profiles:
+      - attacker
+    labels:
+      - "lab.category=attacker"
+      - "lab.name=Kali Attacker"
+
+volumes:
+  dvwa-data:
+  bwapp-data:
+  mysql-vuln-data:
+  postgres-vuln-data:
+  mongodb-vuln-data:
