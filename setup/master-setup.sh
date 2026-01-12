@@ -126,29 +126,45 @@ install_prerequisites() {
 install_docker() {
     header "Phase 2: Installing Docker"
 
+    # Clean up any broken Docker repository configuration first
+    if [[ -f /etc/apt/sources.list.d/docker.list ]]; then
+        if grep -q "kali-rolling" /etc/apt/sources.list.d/docker.list 2>/dev/null; then
+            log "Removing broken Docker repository (kali-rolling)..."
+            rm -f /etc/apt/sources.list.d/docker.list
+            apt-get update -qq 2>/dev/null || true
+        fi
+    fi
+
     if command -v docker &> /dev/null; then
         warn "Docker already installed: $(docker --version)"
     else
         log "Installing Docker..."
 
+        # Remove any existing broken Docker repo files
+        rm -f /etc/apt/sources.list.d/docker.list 2>/dev/null || true
+        rm -f /etc/apt/keyrings/docker.gpg 2>/dev/null || true
+
         # Add Docker's official GPG key
         install -m 0755 -d /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        curl -fsSL https://download.docker.com/linux/debian/gpg -o /tmp/docker.gpg
+        gpg --dearmor -o /etc/apt/keyrings/docker.gpg < /tmp/docker.gpg
+        rm -f /tmp/docker.gpg
         chmod a+r /etc/apt/keyrings/docker.gpg
 
         # Determine the correct Debian codename for Docker repo
-        # Kali uses "kali-rolling" which Docker doesn't support, so we use bookworm (Debian 12)
-        DOCKER_CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
-        if [[ "$DOCKER_CODENAME" == "kali-rolling" ]] || [[ -z "$DOCKER_CODENAME" ]]; then
-            DOCKER_CODENAME="bookworm"
-            log "Detected Kali Linux - using Debian bookworm for Docker repository"
+        # Kali uses "kali-rolling" which Docker doesn't support
+        # Map to the Debian version Kali is based on
+        DOCKER_CODENAME="bookworm"
+        if command -v lsb_release &> /dev/null; then
+            DISTRO=$(lsb_release -is 2>/dev/null || echo "")
+            if [[ "$DISTRO" != "Kali" ]]; then
+                DOCKER_CODENAME=$(lsb_release -cs 2>/dev/null || echo "bookworm")
+            fi
         fi
+        log "Using Debian '$DOCKER_CODENAME' for Docker repository"
 
         # Set up repository
-        echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-          $DOCKER_CODENAME stable" | \
-          tee /etc/apt/sources.list.d/docker.list > /dev/null
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $DOCKER_CODENAME stable" > /etc/apt/sources.list.d/docker.list
 
         apt-get update -qq
         apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
