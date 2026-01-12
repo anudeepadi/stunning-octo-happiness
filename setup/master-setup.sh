@@ -136,10 +136,18 @@ install_docker() {
         curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
         chmod a+r /etc/apt/keyrings/docker.gpg
 
+        # Determine the correct Debian codename for Docker repo
+        # Kali uses "kali-rolling" which Docker doesn't support, so we use bookworm (Debian 12)
+        DOCKER_CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+        if [[ "$DOCKER_CODENAME" == "kali-rolling" ]] || [[ -z "$DOCKER_CODENAME" ]]; then
+            DOCKER_CODENAME="bookworm"
+            log "Detected Kali Linux - using Debian bookworm for Docker repository"
+        fi
+
         # Set up repository
         echo \
           "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+          $DOCKER_CODENAME stable" | \
           tee /etc/apt/sources.list.d/docker.list > /dev/null
 
         apt-get update -qq
