@@ -20,6 +20,12 @@ A complete, hands-on cybersecurity learning environment with 50+ labs, Docker-ba
 - **Progress Tracking** - Track your learning journey
 - **CTF Challenges** - 60+ flags to capture
 
+## 📚 Documentation
+
+- **[QUICK-START.md](QUICK-START.md)** - One-page reference card (After git pull? Start here!)
+- **[GETTING-STARTED.md](GETTING-STARTED.md)** - Complete walkthrough and guide
+- **[NETWORK-LABS-GUIDE.md](NETWORK-LABS-GUIDE.md)** - Network analysis lab details
+
 ## Quick Start
 
 ### Prerequisites
@@ -68,31 +74,31 @@ firefox http://localhost/cyberlab/
 | **FTP** | 2121 | anonymous | Directory traversal |
 | **Buffer Overflow** | 9999 | - | Binary exploitation |
 
-## Learning Modules
+## Learning Modules (52 Labs Total)
 
-### Module 1: Foundations (Beginner)
-- Linux basics, networking fundamentals
+### Module 01: Foundations (5 labs - Beginner)
+- Linux basics, command line mastery, networking fundamentals, security tools, environment setup
 
-### Module 2: Network Analysis
-- Scapy, MITM attacks, packet forensics, IDS, wireless
+### Module 02: Network Analysis (6 labs)
+- Packet capture, traffic analysis, protocol analysis, network scanning, MITM attacks, Scapy
 
-### Module 3: Web Application Security
-- SQL Injection, XSS, CSRF, Command Injection, File Upload, XXE
+### Module 03: Web Application Security (8 labs)
+- SQL Injection, XSS, CSRF, Command Injection, File Upload, Authentication, XXE, Deserialization
 
-### Module 4: System Exploitation
-- Enumeration, Metasploit, shells, privilege escalation, buffer overflow
+### Module 04: System Exploitation (6 labs)
+- Enumeration, reverse shells, privilege escalation, buffer overflow, password attacks, post-exploitation
 
-### Module 5: Cryptography
-- Encoding, encryption, hash cracking, steganography
+### Module 05: Cryptography (8 labs)
+- Encoding, classical ciphers, symmetric/asymmetric encryption, hashing, hash cracking, steganography, crypto attacks
 
-### Module 6: Wireless Security
-- WPA attacks, deauth, evil twin (theory)
+### Module 06: Wireless Security (8 labs)
+- Wireless fundamentals, WiFi protocols, WEP/WPA cracking, deauth attacks, evil twin, Bluetooth
 
-### Module 7: Active Directory
-- Kerberoasting, pass-the-hash, golden ticket (theory + tools)
+### Module 07: Active Directory (7 labs)
+- AD fundamentals, enumeration, Kerberos attacks, credential attacks, delegation, domain dominance, persistence
 
-### Module 8: CTF Challenges
-- 60+ challenges across all domains
+### Module 08: CTF Challenges (4 labs)
+- Mixed difficulty challenges across all domains
 
 ## Directory Structure
 
